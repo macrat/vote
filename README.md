@@ -1,7 +1,7 @@
 vote!
 =====
 
-real time vote system for lightling talk event.
+real time vote system for lightning talk event.
 
 ## Requirement
 server: node.js
