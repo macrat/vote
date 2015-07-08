@@ -1,3 +1,5 @@
+var PASSWORD = 'admin';  // please change this.
+
 function sendHTML(fname, res){
 	fs.readFile(fname, 'utf-8', function(err, data){
 		if(err){
@@ -122,7 +124,7 @@ io.sockets.on('connection', function(socket){
 	});
 
 	socket.on('admin', function(password){
-		if(password != 'tea'){
+		if(password != PASSWORD){
 			console.log('login fail:', socket.client.conn.remoteAddress);
 			socket.emit('incorrect');
 		}else{
