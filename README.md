@@ -5,6 +5,7 @@ real time vote system for lightling talk event.
 
 ## Requirement
 server: node.js
+
 client: modern browser that supports HTML5.
 
 ## Usage
