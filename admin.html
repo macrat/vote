@@ -1,0 +1,248 @@
+<!doctype html>
+
+<html>
+<head>
+<title>admin of vote!</title>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+function panelFadeOut(func){
+	$('body > div').stop();
+	$($('body > div').toArray().filter(function(x){ return $(x).css('display') != 'none'; })).fadeOut(250, func);
+}
+
+$(function(){
+	var speakers = null;
+	var current = null;
+
+	function changeCurrent(next){
+		if(next || next == null){
+			current = next;
+		}
+
+		$('#admin > div').removeClass('current');
+		if(current != null){
+			if(current[0] == 'speaker'){
+				$($('.speaker').toArray().filter(function(x){ return x.innerText == current[1]; })).addClass('current');
+			}else if(current[0] == 'ranking'){
+				$('#ranking').addClass('current');
+			}
+		}
+	}
+
+	var socket = io.connect('//' + location.hostname + ':' + (location.port || '80'));
+
+	socket.on('connect', function(){
+		panelFadeOut(function(){
+			$('#login').fadeIn(250);
+		});
+	});
+
+	socket.on('disconnect', function(){
+		panelFadeOut(function(){
+			$('#wait').fadeIn(250);
+		});
+	});
+
+	function login(){
+		socket.emit('admin', $('#login input').val());
+		panelFadeOut();
+	}
+	$('#login span').click(login);
+	$('#login input').keypress(function(e){
+		if(e.which == 13){
+			login();
+		}
+	});
+
+	socket.on('incorrect', function(){
+		$('#login').fadeIn(250);
+	});
+
+	socket.on('speakers', function(new_speakers){
+		speakers = new_speakers;
+
+		panelFadeOut(function(){
+			$('#admin').html('<div id=ranking>ranking</div>');
+			for(var i in speakers){
+				$('#admin').append('<div class="speaker"></div>');
+				$('#admin > div:last').text(speakers[i]);
+			}
+			$('#admin').append('<div id=reset>reset</div><div id=edit>edit</div>');
+
+			changeCurrent();
+
+			$('#ranking').click(function(){
+				socket.emit('ranking');
+			});
+
+			$('.speaker').click(function(){
+				socket.emit('speaker', this.innerText);
+			});
+
+			$('#reset').click(function(){
+				if(window.confirm('really reset all votes?')){
+					socket.emit('reset');
+				}
+			});
+
+			$('#edit').click(function(){
+				panelFadeOut(function(){
+					$('#editor textarea').val(speakers.join('\n'));
+					$('#editor').fadeIn(250);
+				});
+			});
+
+			$('#admin').fadeIn(250);
+		});
+	});
+
+	socket.on('speaker', function(name){
+		changeCurrent(['speaker', name]);
+	});
+
+	socket.on('ranking', function(data){
+		changeCurrent(['ranking', data]);
+	});
+
+	socket.on('reset', function(){
+		changeCurrent(null);
+	});
+
+	$('#editor #cancel').click(function(){
+		panelFadeOut(function(){
+			$('#admin').fadeIn(250);
+		});
+	});
+	$('#editor #save').click(function(){
+		socket.emit('speakers', $('#editor textarea').val().trim().split('\n').map(function(x){ return x.trim(); }).filter(function(x, i, self){ return x && self.indexOf(x) == i; }));
+	});
+});
+</script>
+
+<style>
+html, body {
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	margin: 0;
+	padding: 0;
+	min-height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+body > div {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+}
+body > div > div {
+	padding: 2em;
+	box-shadow: .5em .5em 2em;
+	text-align: center;
+}
+
+
+#admin > div {
+	font-size: 200%;
+	margin: 1em;
+}
+#admin > div:active {
+	box-shadow: .2em .2em 1em;
+}
+.current {
+	background-color: lightcyan;
+}
+#ranking:not(.current), #edit {
+	background-color: lavender;
+}
+#reset {
+	background-color: lightpink;
+}
+
+
+#editor > div > * {
+	display: block;
+}
+#editor > div > span:first-child {
+	font-size: 200%;
+	margin-bottom: .3em;
+}
+#editor textarea {
+	text-align: center;
+	font-size: 120%;
+	border-width: 0;
+	box-shadow: inset .1em .1em .5em;
+	padding: .5em;
+	line-height: 120%;
+}
+#editor textarea:focus {
+	outline: 0;
+}
+#editor #save , #editor #cancel {
+	box-shadow: .1em .1em .5em;
+	float: right;
+	margin: .3em;
+	padding: .3em;
+}
+#editor #save:active, #editor #cancel:active {
+	box-shadow: .05em .05em .2em;
+}
+
+
+#login > div > span {
+	display: inline-box;
+	padding: .3em;
+	box-shadow: .1em .1em .5em;
+}
+#login > div > span:active {
+	box-shadow: .05em .05em .25em;
+}
+
+
+#wait {
+	flex-direction: column;
+}
+#wait span {
+	display: block;
+}
+#wait :first-child {
+	font-size: 800%;
+	color: #ddd;
+}
+#wait :last-child {
+	font-size: 400%;
+	color: #eee;
+}
+</style>
+</head>
+
+<body>
+	<div id=login style="display: none;">
+		<div>
+			<input type=password placeholder=password autofocus>
+			<span>login</span>
+		</div>
+	</div>
+
+	<div id=admin style="display: none;"></div>
+
+	<div id=editor style="display: none;">
+		<div>
+			<span>speakers</span>
+			<textarea cols=30 rows=10></textarea>
+			<div>
+				<span id=save>save</span>
+				<span id=cancel>cancel</span>
+			</div>
+		</div>
+	</div>
+
+	<div id=wait>
+		<span>vote!</span>
+		<span>disconnect</span>
+	</div>
+</body>
+</html>

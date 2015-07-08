@@ -1,0 +1,200 @@
+<!doctype html>
+
+<html>
+<head>
+<title>vote!</title>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+function panelFadeOut(func){
+	$('body > div').stop();
+	$($('body > div').toArray().filter(function(x){ return $(x).css('display') != 'none'; })).fadeOut(250, func);
+}
+
+function clickAnime(target){
+	target.css('box-shadow', '.2em .2em 1em');
+	setTimeout(function(){
+		target.css('box-shadow', '.5em .5em 2em');
+	}, 100);
+}
+
+$(function(){
+	var socket = io.connect('//' + location.hostname + ':' + (location.port || '80'));
+
+	function blankPanel(){
+		panelFadeOut(function(){
+			$('title').text('vote!');
+			$('#wait').fadeIn(250);
+		});
+	}
+	socket.on('disconnect', blankPanel);
+	socket.on('reset', blankPanel);
+
+	socket.on('speaker', function(name){
+		panelFadeOut(function(){
+			$('title').text(name + "'s vote!");
+			$('#name').text(name);
+			$('#vote').fadeIn(250);
+		});
+	});
+	socket.on('good', function(count){
+		$('#good .score').text(count);
+		clickAnime($('#good .btn'));
+	});
+	socket.on('bad', function(count){
+		$('#bad .score').text(count);
+		clickAnime($('#bad .btn'));
+	});
+
+	socket.on('ranking', function(scores){
+		panelFadeOut(function(){
+			$('title').text('ranking of vote!');
+			$('#ranking').text('');
+			for(var i in scores){
+				$('#ranking').append('<div><span class="name"></span><span class="bad"></span><span class="good"></span><span class="score"></span></div>');
+
+				$('#ranking div:last .name').text(scores[i].name);
+
+				if(scores[i].bad == 0 && scores[i].good == 0){
+					$('#ranking div:last .bad, #ranking div:last .good, #ranking div:last .score').text('-');
+				}else{
+					$('#ranking div:last .bad').text(scores[i].bad);
+					$('#ranking div:last .good').text(scores[i].good);
+
+					var score = scores[i].good - scores[i].bad;
+					if(score > 0){
+						score = '+' + score;
+					}
+					$('#ranking div:last .score').text(score);
+				}
+			}
+
+			$('#ranking').fadeIn(250);
+		});
+	});
+
+	$('#good .btn').click(function(){ socket.emit('good'); });
+	$('#bad .btn').click(function(){ socket.emit('bad'); });
+
+	$('.btn').mousedown(function(){
+		$(this).css('box-shadow', '.2em .2em 1em');
+	});
+});
+</script>
+
+<style>
+html, body {
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	margin: 0;
+	padding: 0;
+	min-height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+body > div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+
+#name {
+	font-size: 300%;
+}
+#buttons {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+#buttons > div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+.btn {
+	padding: 3em;
+	box-shadow: .5em .5em 2em;
+	font-size: 150%;
+	margin: 2em;
+}
+#good .btn {
+	background-color: lightcyan;
+}
+#bad .btn {
+	background-color: lightpink;
+}
+#vote .score {
+	font-size: 250%;
+}
+
+
+#ranking > div {
+	margin: 1em;
+}
+#ranking > div:first-child {
+	font-size: 130%;
+}
+#ranking span {
+	margin-left: .5em;
+}
+.name {
+	font-size: 300%;
+}
+.bad, .good {
+	box-shadow: .1em .1em .3em;
+}
+.bad, .good, #ranking .score {
+	display: inline-block;
+	padding: .5em;
+	font-size: 200%;
+}
+.bad {
+	background-color: lightpink;
+}
+.good {
+	background-color: lightcyan;
+}
+
+
+#wait span {
+	display: block;
+}
+#wait :first-child {
+	font-size: 800%;
+	color: #ddd;
+}
+#wait :last-child {
+	font-size: 400%;
+	color: #eee;
+}
+</style>
+</head>
+
+<body>
+	<div id=vote style="display: none;">
+		<div id=name></div>
+		<div id=buttons>
+			<div id=bad>
+				<div class="btn">bad</div>
+				<div class="score">0</div>
+			</div>
+			<div id=good>
+				<div class="btn">good</div>
+				<div class="score">0</div>
+			</div>
+		</div>
+	</div>
+
+	<div id=ranking style="display: none;"></div>
+
+	<div id=wait>
+		<span>vote!</span>
+		<span>please wait</span>
+	</div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "vote!",
+  "description": "vote for LinuxClub lightning talk",
+  "main": "app.js",
+  "author": "MacRat",
+  "license": "MIT License",
+  "dependencies": {
+	  "socket.io": "*"
+  }
+}
