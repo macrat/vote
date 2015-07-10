@@ -76,14 +76,14 @@ $(function(){
 	var lastClick = 0;
 	$('#good .btn').click(function(){
 			var now = new Date();
-			if(now - lastClick >= 200){
+			if(now - lastClick >= 100){
 				socket.emit('good');
 			}
 			lastClick = now;
 		});
 	$('#bad .btn').click(function(){
 			var now = new Date();
-			if(now - lastClick >= 200){
+			if(now - lastClick >= 100){
 				socket.emit('bad');
 			}
 			lastClick = now;
