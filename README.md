@@ -1,63 +1,63 @@
 vote!
 =====
 
-real time vote system for lightning talk event.
+Real time vote system for lightning talk event.
 
 ## Requirement
 server: node.js
 
-client: modern browser that supports HTML5.
+client: Modern browser that supports HTML5.
 
 ## Usage
-first, please change password of administrator page.
-this option is defined in app.js.
+First, please change password of administrator page.
+This option is defined in app.js.
 
-next, install required package with npm. then, start server.
+Next, install required package with npm. Then, start server.
 ```
 	$ npm install
 	$ node app.js
 ```
-lastly, access to port 8080 with browser.
+Lastly, access to port 8080 with browser.
 
 ## URLs
 - /
 
-	client page.
-	make vote and view ranking.
+	Client page.
+	Make vote and view ranking.
 
 - /admin
 
-	administrator page.
-	change page of client view, edit speakers list, and reset votes.
+	Administrator page.
+	Change page of client view, edit speakers list, and reset votes.
 
 - /ranking.json
 
-	download score data.
+	Download score data.
 
 ## Files
 - app.js
 
-	server program.
+	Server program.
 
 - package.json
 
-	defines for npm.
+	Defines for npm.
 
 - scores.json
 
-	speakers and scores. make by app.js.
+	Speakers and scores. Make by app.js.
 
 - index.html
 
-	client program.
+	Client program.
 
 - admin.html
 
-	admin page program.
+	Admin page program.
 
 - README.md
 
-	this file.
+	This file.
 
 
 ## License / Author

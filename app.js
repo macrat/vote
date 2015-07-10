@@ -1,4 +1,4 @@
-var PASSWORD = 'admin';  // please change this.
+var PASSWORD = 'admin';  // Please change this.
 
 function sendHTML(fname, res){
 	fs.readFile(fname, 'utf-8', function(err, data){
