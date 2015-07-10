@@ -73,8 +73,21 @@ $(function(){
 		});
 	});
 
-	$('#good .btn').click(function(){ socket.emit('good'); });
-	$('#bad .btn').click(function(){ socket.emit('bad'); });
+	var lastClick = 0;
+	$('#good .btn').click(function(){
+			var now = new Date();
+			if(now - lastClick >= 200){
+				socket.emit('good');
+			}
+			lastClick = now;
+		});
+	$('#bad .btn').click(function(){
+			var now = new Date();
+			if(now - lastClick >= 200){
+				socket.emit('bad');
+			}
+			lastClick = now;
+		});
 
 	$('.btn').mousedown(function(){
 		$(this).css('box-shadow', '.2em .2em 1em');
